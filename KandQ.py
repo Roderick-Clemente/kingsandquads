@@ -74,9 +74,11 @@ class KingsAndQuadraphages:
 
     def update_turn_indicator(self):
         if not self.king_moved:
-            self.root.title(f"Kings and Quadraphages - Player {self.current_player}'s Turn: Move the King")
+            titletext = self.generate_king_title_text()
+            self.root.title(titletext)
         else:
-            self.root.title(f"Kings and Quadraphages - Player {self.current_player}'s Turn: Place a Quadraphage")
+            titletext = self.generate_quad_title_text()
+            self.root.title(titletext)
 
     def check_end_condition(self):
         for player in range(2):
@@ -96,6 +98,18 @@ class KingsAndQuadraphages:
                 if 0 <= new_row < BOARD_SIZE and 0 <= new_col < BOARD_SIZE and self.board[new_row][new_col] is None:
                     return False
         return True
+    
+    def generate_king_title_text(self):
+        if self.current_player == 1: 
+            return "Kings and Quadraphages - Red Player's Turn: Move the King"
+        else:
+            return "Kings and Quadraphages - Blue Player's Turn: Move the King"
+        
+    def generate_quad_title_text(self):
+        if self.current_player == 1: 
+            return "Kings and Quadraphages - Red Player's Turn: Place a Quadraphage"
+        else:
+            return "Kings and Quadraphages - Blue Player's Turn: Place a Quadraphage"
 
 # Main loop
 if __name__ == "__main__":
