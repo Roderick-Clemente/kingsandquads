@@ -3,6 +3,8 @@
 ## Overview
 Kings and Quadraphages is a simple, two-player strategy game where the goal is to trap your opponent's king on a 9x9 board. The game allows two players to alternate turns, moving their king and placing pieces called quadraphages to strategically block the opponent.
 
+Buy the game from Math Pentathalon https://www.mathpentath.org/product/kings-quadraphages-complete-game/
+
 ## Features
 - **Two-player mode**: Each player controls a king and 30 quadraphages.
 - **Board Setup**: A 9x9 grid where each square can hold a king or a quadraphage.
