@@ -8,6 +8,7 @@ class KingsAndQuadraphages:
     def __init__(self, root):
         self.root = root
         self.root.title("Kings and Quadraphages")
+        self.root.bind('<Configure>', self.resize)
         
         # Initialize board and pieces
         self.board = [[None for _ in range(BOARD_SIZE)] for _ in range(BOARD_SIZE)]
@@ -110,6 +111,17 @@ class KingsAndQuadraphages:
             return "Kings and Quadraphages - Red Player's Turn: Place a Quadraphage"
         else:
             return "Kings and Quadraphages - Blue Player's Turn: Place a Quadraphage"
+            
+    def resize(self, event):
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+        min_size = min(width, height)
+        button_size = min_size // BOARD_SIZE
+        for row in self.buttons:
+            for button in row:
+                button.config(width=button_size//10, height=button_size//20)
+
+   
 
 # Main loop
 if __name__ == "__main__":
