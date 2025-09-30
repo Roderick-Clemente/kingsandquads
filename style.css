@@ -26,7 +26,7 @@ body {
 h1 {
     text-align: center;
     color: #333;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     font-size: 2em;
 }
 
@@ -88,20 +88,68 @@ h1 {
     width: 100%;
 }
 
-.game-info {
-    margin-bottom: 25px;
+.player-number {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 10px;
 }
 
-.player-status {
+.game-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 25px;
     gap: 20px;
 }
 
-.player-color {
+.player-info {
     flex: 1;
-    padding: 15px 20px;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.player-info.player1 {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+}
+
+.player-info.player2 {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.player-label {
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.piece-display {
+    font-size: 2em;
+    margin: 5px 0;
+}
+
+.quad-display {
+    margin-left: 10px;
+}
+
+.quad-count {
+    font-size: 0.85em;
+    margin-top: 8px;
+    opacity: 0.95;
+}
+
+.turn-indicator {
+    flex: 2;
+    padding: 20px;
     background: #f8f9fa;
     border-radius: 10px;
     text-align: center;
@@ -109,28 +157,11 @@ h1 {
     font-size: 1.1em;
     color: #333;
     border: 3px solid #dee2e6;
-}
-
-.turn-indicator {
-    flex: 1;
-    padding: 15px 20px;
-    border-radius: 10px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 1.1em;
     transition: all 0.3s ease;
 }
 
 .turn-indicator.your-turn {
-    background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
-    color: white;
     animation: pulse 2s ease-in-out infinite;
-}
-
-.turn-indicator.opponent-turn {
-    background: #f8f9fa;
-    color: #666;
-    border: 3px solid #dee2e6;
 }
 
 @keyframes pulse {
@@ -138,10 +169,19 @@ h1 {
     50% { opacity: 0.7; }
 }
 
-/* Board */
+.turn-indicator.player1-turn {
+    border-color: #ff6b6b;
+    background: #ffe3e3;
+}
+
+.turn-indicator.player2-turn {
+    border-color: #4facfe;
+    background: #e3f2ff;
+}
+
 .board {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(9, 1fr);
     gap: 4px;
     background: #495057;
     padding: 4px;
@@ -154,77 +194,60 @@ h1 {
 .square {
     background: white;
     border: none;
+    font-size: 2em;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    position: relative;
-}
-
-.square.light {
-    background: #f0d9b5;
-}
-
-.square.dark {
-    background: #b58863;
 }
 
 .square:hover {
-    opacity: 0.8;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.square.selected {
-    box-shadow: inset 0 0 0 3px #51cf66;
+.square.king-red {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
 }
 
-.square.valid-move {
-    box-shadow: inset 0 0 0 3px #4dabf7;
-    background-color: rgba(77, 171, 247, 0.3) !important;
-    animation: moveHint 1.5s ease-in-out infinite;
+.square.king-blue {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
-@keyframes moveHint {
+.square.king-active {
+    animation: kingBlink 2s ease-in-out infinite;
+}
+
+@keyframes kingBlink {
     0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+    50% { opacity: 0.4; }
 }
 
-.square.has-piece {
-    cursor: grab;
+.square.occupied {
+    background: #e9ecef;
+    cursor: not-allowed;
 }
 
-.square.has-piece:active {
-    cursor: grabbing;
+.square.occupied:hover {
+    transform: none;
+    box-shadow: none;
 }
 
-/* Pieces */
-.piece {
-    font-size: 3em;
-    user-select: none;
-    transition: transform 0.2s ease;
+.square.king-red.not-clickable,
+.square.king-blue.not-clickable {
+    cursor: not-allowed;
 }
 
-.piece.king.white {
-    color: #fff;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+.square.king-red.not-clickable:hover,
+.square.king-blue.not-clickable:hover {
+    transform: none;
+    box-shadow: none;
 }
 
-.piece.king.black {
-    color: #000;
-    filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.3));
-}
-
-.piece.quadraphage.white {
-    color: #fff;
-    font-size: 2em;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-.piece.quadraphage.black {
-    color: #000;
-    font-size: 2em;
-    filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.3));
+.square.quad-preview {
+    opacity: 0.5;
 }
 
 /* Responsive design */
@@ -235,15 +258,14 @@ h1 {
 
     h1 {
         font-size: 1.5em;
-        margin-bottom: 20px;
     }
 
-    .player-status {
+    .game-info {
         flex-direction: column;
     }
 
-    .player-color,
     .turn-indicator {
+        order: -1;
         width: 100%;
     }
 
@@ -251,11 +273,7 @@ h1 {
         max-width: 100%;
     }
 
-    .piece {
-        font-size: 2em;
-    }
-
-    .piece.quadraphage {
+    .square {
         font-size: 1.5em;
     }
 

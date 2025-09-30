@@ -21,10 +21,23 @@
 
         <!-- Game Screen -->
         <div id="game-screen" class="game-screen" style="display: none;">
+            <div id="player-number" class="player-number"></div>
+
             <div class="game-info">
-                <div class="player-status">
-                    <div id="player-color" class="player-color"></div>
-                    <div id="turn-indicator" class="turn-indicator"></div>
+                <div class="player-info player1">
+                    <div class="player-label">Red Player</div>
+                    <div class="piece-display">👑 <span class="quad-display">🔴</span></div>
+                    <div class="quad-count">Quadraphages: <span id="p1-count">30</span></div>
+                </div>
+
+                <div class="turn-indicator" id="turn-indicator">
+                    Red Player's Turn: Move the King
+                </div>
+
+                <div class="player-info player2">
+                    <div class="player-label">Blue Player</div>
+                    <div class="piece-display">👑 <span class="quad-display">🔵</span></div>
+                    <div class="quad-count">Quadraphages: <span id="p2-count">30</span></div>
                 </div>
             </div>
 

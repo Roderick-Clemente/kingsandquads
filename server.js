@@ -22,115 +22,116 @@ class Game {
         this.gameId = gameId;
         this.player1Id = player1Id;
         this.player2Id = player2Id;
-        this.currentTurn = 'white'; // white goes first
-        this.board = this.initializeBoard();
-        this.selectedPiece = null;
+        this.currentPlayer = 1; // 1 or 2
+        this.board = Array(9).fill(null).map(() => Array(9).fill(null));
+        this.kingPositions = [[0, 4], [8, 4]]; // [row, col] for player 1 and 2
+        this.quadraphageCounts = [30, 30];
+        this.kingMoved = false;
         this.gameOver = false;
         this.winner = null;
+
+        // Initialize kings
+        this.board[0][4] = '👑1';
+        this.board[8][4] = '👑2';
     }
 
-    initializeBoard() {
-        const board = Array(8).fill(null).map(() => Array(8).fill(null));
-
-        // Place white kings (bottom)
-        board[7][3] = { type: 'king', color: 'white' };
-        board[7][4] = { type: 'king', color: 'white' };
-
-        // Place black kings (top)
-        board[0][3] = { type: 'king', color: 'black' };
-        board[0][4] = { type: 'king', color: 'black' };
-
-        // Place white quadraphages
-        for (let col = 0; col < 8; col++) {
-            if (col !== 3 && col !== 4) {
-                board[6][col] = { type: 'quadraphage', color: 'white' };
-            }
-        }
-
-        // Place black quadraphages
-        for (let col = 0; col < 8; col++) {
-            if (col !== 3 && col !== 4) {
-                board[1][col] = { type: 'quadraphage', color: 'black' };
-            }
-        }
-
-        return board;
+    isKingMove(row, col) {
+        const [kingRow, kingCol] = this.kingPositions[this.currentPlayer - 1];
+        const rowDiff = Math.abs(kingRow - row);
+        const colDiff = Math.abs(kingCol - col);
+        return rowDiff <= 1 && colDiff <= 1 && this.board[row][col] === null;
     }
 
-    isValidMove(fromRow, fromCol, toRow, toCol) {
-        const piece = this.board[fromRow][fromCol];
-        if (!piece || piece.color !== this.currentTurn) return false;
-
-        const targetPiece = this.board[toRow][toCol];
-        if (targetPiece && targetPiece.color === piece.color) return false;
-
-        const rowDiff = Math.abs(toRow - fromRow);
-        const colDiff = Math.abs(toCol - fromCol);
-
-        if (piece.type === 'king') {
-            return rowDiff <= 1 && colDiff <= 1 && (rowDiff > 0 || colDiff > 0);
-        } else if (piece.type === 'quadraphage') {
-            return (rowDiff === 1 && colDiff === 0) || (rowDiff === 0 && colDiff === 1);
+    moveKing(row, col) {
+        if (!this.isKingMove(row, col)) {
+            return { success: false, error: 'Invalid king move' };
         }
 
-        return false;
+        const [oldRow, oldCol] = this.kingPositions[this.currentPlayer - 1];
+
+        // Clear old position
+        this.board[oldRow][oldCol] = null;
+
+        // Set new position
+        this.board[row][col] = `👑${this.currentPlayer}`;
+        this.kingPositions[this.currentPlayer - 1] = [row, col];
+
+        this.kingMoved = true;
+
+        return {
+            success: true,
+            board: this.board,
+            kingMoved: this.kingMoved,
+            currentPlayer: this.currentPlayer,
+            kingPositions: this.kingPositions,
+            quadraphageCounts: this.quadraphageCounts
+        };
     }
 
-    makeMove(fromRow, fromCol, toRow, toCol) {
-        if (!this.isValidMove(fromRow, fromCol, toRow, toCol)) {
-            return { success: false, error: 'Invalid move' };
+    placeQuadraphage(row, col) {
+        if (this.board[row][col] !== null) {
+            return { success: false, error: 'Square is not empty' };
         }
 
-        const piece = this.board[fromRow][fromCol];
-        const capturedPiece = this.board[toRow][toCol];
-
-        this.board[toRow][toCol] = piece;
-        this.board[fromRow][fromCol] = null;
-
-        // Check for promotion
-        if (piece.type === 'quadraphage') {
-            if ((piece.color === 'white' && toRow === 0) ||
-                (piece.color === 'black' && toRow === 7)) {
-                this.board[toRow][toCol] = { type: 'king', color: piece.color };
-            }
+        if (!this.kingMoved) {
+            return { success: false, error: 'Must move king first' };
         }
+
+        if (this.quadraphageCounts[this.currentPlayer - 1] <= 0) {
+            return { success: false, error: 'No quadraphages left' };
+        }
+
+        const symbol = this.currentPlayer === 1 ? '🔴' : '🔵';
+        this.board[row][col] = symbol;
+        this.quadraphageCounts[this.currentPlayer - 1]--;
 
         // Check for game over
         this.checkGameOver();
 
         // Switch turn
-        this.currentTurn = this.currentTurn === 'white' ? 'black' : 'white';
+        this.kingMoved = false;
+        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
 
         return {
             success: true,
             board: this.board,
-            currentTurn: this.currentTurn,
+            kingMoved: this.kingMoved,
+            currentPlayer: this.currentPlayer,
+            kingPositions: this.kingPositions,
+            quadraphageCounts: this.quadraphageCounts,
             gameOver: this.gameOver,
             winner: this.winner
         };
     }
 
     checkGameOver() {
-        let whiteKings = 0;
-        let blackKings = 0;
+        for (let player = 0; player < 2; player++) {
+            const [kingRow, kingCol] = this.kingPositions[player];
+            if (this.isKingTrapped(kingRow, kingCol)) {
+                this.gameOver = true;
+                this.winner = player === 0 ? 2 : 1; // The other player wins
+            }
+        }
+    }
 
-        for (let row = 0; row < 8; row++) {
-            for (let col = 0; col < 8; col++) {
-                const piece = this.board[row][col];
-                if (piece && piece.type === 'king') {
-                    if (piece.color === 'white') whiteKings++;
-                    else blackKings++;
+    isKingTrapped(kingRow, kingCol) {
+        // Check all 8 surrounding squares
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                if (dr === 0 && dc === 0) continue;
+
+                const newRow = kingRow + dr;
+                const newCol = kingCol + dc;
+
+                // If any square is in bounds and empty, king is not trapped
+                if (newRow >= 0 && newRow < 9 &&
+                    newCol >= 0 && newCol < 9 &&
+                    this.board[newRow][newCol] === null) {
+                    return false;
                 }
             }
         }
-
-        if (whiteKings === 0) {
-            this.gameOver = true;
-            this.winner = 'black';
-        } else if (blackKings === 0) {
-            this.gameOver = true;
-            this.winner = 'white';
-        }
+        return true;
     }
 }
 
@@ -152,12 +153,12 @@ io.on('connection', (socket) => {
             // Store player info
             players.set(socket.id, {
                 gameId,
-                color: 'white',
+                playerNumber: 1,
                 opponentId: opponent.id
             });
             players.set(opponent.id, {
                 gameId,
-                color: 'black',
+                playerNumber: 2,
                 opponentId: socket.id
             });
 
@@ -168,15 +169,21 @@ io.on('connection', (socket) => {
             // Notify both players
             socket.emit('gameStart', {
                 gameId,
-                color: 'white',
+                playerNumber: 1,
                 board: game.board,
-                currentTurn: game.currentTurn
+                currentPlayer: game.currentPlayer,
+                kingMoved: game.kingMoved,
+                kingPositions: game.kingPositions,
+                quadraphageCounts: game.quadraphageCounts
             });
             opponent.socket.emit('gameStart', {
                 gameId,
-                color: 'black',
+                playerNumber: 2,
                 board: game.board,
-                currentTurn: game.currentTurn
+                currentPlayer: game.currentPlayer,
+                kingMoved: game.kingMoved,
+                kingPositions: game.kingPositions,
+                quadraphageCounts: game.quadraphageCounts
             });
 
             console.log('Game started:', gameId);
@@ -188,7 +195,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('move', (data) => {
+    socket.on('moveKing', (data) => {
         const player = players.get(socket.id);
         if (!player) return;
 
@@ -196,24 +203,47 @@ io.on('connection', (socket) => {
         if (!game) return;
 
         // Verify it's the player's turn
-        if (game.currentTurn !== player.color) {
+        if (game.currentPlayer !== player.playerNumber) {
             socket.emit('error', { message: 'Not your turn' });
             return;
         }
 
-        const { fromRow, fromCol, toRow, toCol } = data;
-        const result = game.makeMove(fromRow, fromCol, toRow, toCol);
+        // Verify king hasn't moved yet this turn
+        if (game.kingMoved) {
+            socket.emit('error', { message: 'King already moved, place quadraphage' });
+            return;
+        }
+
+        const { row, col } = data;
+        const result = game.moveKing(row, col);
 
         if (result.success) {
             // Broadcast move to both players
-            io.to(player.gameId).emit('moveUpdate', {
-                board: result.board,
-                currentTurn: result.currentTurn,
-                fromRow,
-                fromCol,
-                toRow,
-                toCol
-            });
+            io.to(player.gameId).emit('gameUpdate', result);
+        } else {
+            socket.emit('error', { message: result.error });
+        }
+    });
+
+    socket.on('placeQuadraphage', (data) => {
+        const player = players.get(socket.id);
+        if (!player) return;
+
+        const game = games.get(player.gameId);
+        if (!game) return;
+
+        // Verify it's the player's turn
+        if (game.currentPlayer !== player.playerNumber) {
+            socket.emit('error', { message: 'Not your turn' });
+            return;
+        }
+
+        const { row, col } = data;
+        const result = game.placeQuadraphage(row, col);
+
+        if (result.success) {
+            // Broadcast move to both players
+            io.to(player.gameId).emit('gameUpdate', result);
 
             if (result.gameOver) {
                 io.to(player.gameId).emit('gameOver', { winner: result.winner });
