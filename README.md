@@ -31,10 +31,14 @@ Both versions are fully functional and supported for now. **The Python version m
 - No installation required
 
 **Features:**
-- Modern, responsive UI
+- Modern, responsive UI with gradient design
 - Smooth animations and hover effects
+- King blinks when it's time to move it
+- Semi-transparent preview when placing quadraphages
 - Live quadraphage counters
+- Visual feedback (cursor changes for unclickable pieces)
 - Reset button for quick restarts
+- Mobile-friendly
 
 ### 🐍 Python Version (Legacy)
 
@@ -50,8 +54,9 @@ python KandQ.py
 
 **Features:**
 - Lightweight desktop application
-- Simple, functional UI
+- Simple Tkinter UI
 - Cross-platform (Windows, Mac, Linux)
+- Basic game mechanics
 
 ## Development
 
