@@ -167,6 +167,10 @@ io.on('connection', (socket) => {
             opponent.socket.join(gameId);
 
             // Notify both players
+            console.log('Server board length:', game.board.length);
+            console.log('Server board[0][4]:', game.board[0][4]);
+            console.log('Server board[8][4]:', game.board[8][4]);
+
             socket.emit('gameStart', {
                 gameId,
                 playerNumber: 1,
