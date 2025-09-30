@@ -162,13 +162,41 @@ class BaseGame {
                 const winner = player === 0 ? 2 : 1;
                 const winnerColor = winner === 1 ? 'Red' : 'Blue';
                 const loserColor = winner === 1 ? 'Blue' : 'Red';
-                setTimeout(() => {
-                    alert(`Game Over! ${winnerColor} Player wins! ${loserColor} Player's king is trapped!`);
-                }, 100);
+
+                // Trigger celebration animation
+                this.celebrateWin(winner, winnerColor, loserColor);
                 return true;
             }
         }
         return false;
+    }
+
+    celebrateWin(winner, winnerColor, loserColor) {
+        // Convert all quadraphages to fireworks with staggered animation
+        let delay = 0;
+        const fireworkSquares = [];
+
+        for (let row = 0; row < BOARD_SIZE; row++) {
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                const content = this.board[row][col];
+                if (content === '🔴' || content === '🔵') {
+                    const square = this.squares[row][col];
+                    fireworkSquares.push({ square, delay });
+
+                    setTimeout(() => {
+                        square.textContent = '🎆';
+                        square.classList.add('firework');
+                    }, delay);
+
+                    delay += 50; // Stagger the animations
+                }
+            }
+        }
+
+        // Show victory message after fireworks start
+        setTimeout(() => {
+            alert(`Game Over! ${winnerColor} Player wins! ${loserColor} Player's king is trapped!`);
+        }, delay + 500);
     }
 
     // Abstract method - must be implemented by subclasses
