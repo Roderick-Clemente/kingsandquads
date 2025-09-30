@@ -234,8 +234,8 @@ class MultiplayerGame {
             }
         }
 
-        // Add blink effect to current player's king when it's time to move and it's their turn
-        if (!this.kingMoved && this.isMyTurn) {
+        // Add blink effect to current player's king when it's time to move
+        if (!this.kingMoved) {
             const [kingRow, kingCol] = this.kingPositions[this.currentPlayer - 1];
             const kingSquare = this.squares[kingRow][kingCol];
             kingSquare.classList.add('king-active');
