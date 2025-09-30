@@ -114,6 +114,10 @@ class MultiplayerGame {
         const playerColor = this.playerNumber === 1 ? 'Red' : 'Blue';
         this.playerNumberElement.textContent = `You are: ${playerColor} Player`;
 
+        console.log('Starting game with board:', this.board);
+        console.log('King at [0][4]:', this.board[0][4]);
+        console.log('King at [8][4]:', this.board[8][4]);
+
         this.createBoard();
         this.updateUI();
     }
