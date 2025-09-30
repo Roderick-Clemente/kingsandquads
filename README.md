@@ -1,36 +1,67 @@
 # Kings and Quadraphages
 
-## Overview
-Kings and Quadraphages is a simple, two-player strategy game where the goal is to trap your opponent's king on a 9x9 board. The game allows two players to alternate turns, moving their king and placing pieces called quadraphages to strategically block the opponent.
+A two-player strategy board game where players move their Kings and place Quadraphages to trap their opponent.
 
-Buy the game from Math Pentathalon https://www.mathpentath.org/product/kings-quadraphages-complete-game/
+Buy the physical game from [Math Pentathlon](https://www.mathpentath.org/product/kings-quadraphages-complete-game/)
 
-## Features
-- **Two-player mode**: Each player controls a king and 30 quadraphages.
-- **Board Setup**: A 9x9 grid where each square can hold a king or a quadraphage.
-- **Emojis**: Kings are represented by 👑 emojis, and quadraphages by colored circles (🔴 for Player 1, 🔵 for Player 2).
-- **Simple UI**: Built using Python's Tkinter library for easy interaction.
+## Game Rules
 
-## How to Play
-1. **Move the King**: Each player moves their king 👑 to an adjacent square (horizontal, vertical, or diagonal).
-2. **Place a Quadraphage**: After moving, place a quadraphage (🔴 or 🔵) to block squares and try to trap your opponent's king.
-3. **Win Condition**: The game ends when a king is completely surrounded by quadraphages, unable to make any further moves.
+- **Board:** 9x9 grid
+- **Players:** 2 (Red vs Blue)
+- **Pieces:** Each player has 1 King (👑) and 30 Quadraphages (🔴/🔵)
+- **Starting Position:** Red King at top center, Blue King at bottom center
 
-## Running the Game
-To run this game locally:
-1. Make sure you have Python installed (Python 3.x is recommended).
-2. Save the game script as `kings_and_quadraphages.py`.
-3. Run the script using:
-   ```bash
-   python kings_and_quadraphages.py
-   ```
+### How to Play
 
-## Dependencies
-- **Tkinter**: The game uses Tkinter, which is included with most standard Python installations.
+1. **Move your King:** Move one square in any direction (including diagonally)
+2. **Place a Quadraphage:** After moving, place one of your Quadraphages on any empty square
+3. **Win Condition:** Trap your opponent's King so it has no valid moves
+
+## Play Options
+
+Both versions are fully functional and supported for now. **The Python version may be sunset in the future.**
+
+### 🌐 Web Version (Recommended)
+
+**Files:** `index.html`, `style.css`, `game.js`
+
+**To Play:**
+- Simply open `index.html` in any modern web browser
+- Works on desktop, tablet, and mobile devices
+- No installation required
+
+**Features:**
+- Modern, responsive UI
+- Smooth animations and hover effects
+- Live quadraphage counters
+- Reset button for quick restarts
+
+### 🐍 Python Version (Legacy)
+
+**File:** `KandQ.py`
+
+**Requirements:**
+- Python 3.x with Tkinter (usually included by default)
+
+**To Play:**
+```bash
+python KandQ.py
+```
+
+**Features:**
+- Lightweight desktop application
+- Simple, functional UI
+- Cross-platform (Windows, Mac, Linux)
+
+## Development
+
+Current branch: `web-version`
+
+The web version represents a modernization of the original Python/Tkinter implementation, with improved UI/UX while maintaining all core game mechanics.
 
 ## Future Enhancements
-- **AI Opponent**: Add a computer-controlled opponent for single-player mode.
-- **Online Multiplayer**: Add support for remote multiplayer gameplay.
+- AI opponent for single-player mode
+- Online multiplayer support
 
 ## License
 This project is open source, and you are free to modify and distribute it as you wish.
