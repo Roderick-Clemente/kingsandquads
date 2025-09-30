@@ -49,31 +49,53 @@ h1 {
     font-size: 1.5em;
 }
 
-.find-game-btn {
-    padding: 15px 50px;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: white;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    border-radius: 50px;
+.mode-buttons {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 30px 20px;
+    background: white;
+    border: 3px solid #e0e0e0;
+    border-radius: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    text-align: center;
 }
 
-.find-game-btn:hover:not(:disabled) {
+.mode-btn:hover:not(:disabled) {
+    border-color: #667eea;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.mode-btn:active:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
 }
 
-.find-game-btn:active:not(:disabled) {
-    transform: translateY(0);
-}
-
-.find-game-btn:disabled {
-    opacity: 0.6;
+.mode-btn:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
+}
+
+.mode-icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+.mode-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.mode-desc {
+    font-size: 0.9em;
+    color: #666;
 }
 
 .status-text {
@@ -277,8 +299,15 @@ h1 {
         font-size: 1.5em;
     }
 
-    .find-game-btn {
-        padding: 12px 40px;
-        font-size: 1em;
+    .mode-buttons {
+        flex-direction: column;
+    }
+
+    .mode-btn {
+        padding: 25px 15px;
+    }
+
+    .mode-icon {
+        font-size: 2.5em;
     }
 }
