@@ -121,9 +121,17 @@ class KingsAndQuadraphages {
         } else if (content === '👑1') {
             square.textContent = '👑';
             square.classList.add('king-red');
+            // Add occupied class if it's not this king's turn
+            if (this.currentPlayer !== 1) {
+                square.classList.add('occupied');
+            }
         } else if (content === '👑2') {
             square.textContent = '👑';
             square.classList.add('king-blue');
+            // Add occupied class if it's not this king's turn
+            if (this.currentPlayer !== 2) {
+                square.classList.add('occupied');
+            }
         } else {
             square.textContent = content;
             square.classList.add('occupied');
@@ -143,6 +151,21 @@ class KingsAndQuadraphages {
         // Update turn indicator styling
         this.turnIndicator.className = 'turn-indicator';
         this.turnIndicator.classList.add(this.currentPlayer === 1 ? 'player1-turn' : 'player2-turn');
+
+        // Update all squares to refresh cursor states
+        for (let row = 0; row < BOARD_SIZE; row++) {
+            for (let col = 0; col < BOARD_SIZE; col++) {
+                this.updateSquare(row, col);
+            }
+        }
+
+        // Add blink effect to current player's king when it's time to move
+        // (Do this AFTER updateSquare so it doesn't get removed)
+        if (!this.kingMoved) {
+            const [kingRow, kingCol] = this.kingPositions[this.currentPlayer - 1];
+            const kingSquare = this.squares[kingRow][kingCol];
+            kingSquare.classList.add('king-active');
+        }
     }
 
     checkEndCondition() {

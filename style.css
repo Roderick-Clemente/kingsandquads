@@ -137,6 +137,15 @@ h1 {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
+.square.king-active {
+    animation: kingBlink 2s ease-in-out infinite;
+}
+
+@keyframes kingBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
 .square.occupied {
     background: #e9ecef;
     cursor: not-allowed;
