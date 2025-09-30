@@ -1,250 +1,318 @@
-// Constants
-const BOARD_SIZE = 9;
+// Multiplayer Kings and Quadraphages Game
 
-class KingsAndQuadraphages {
+class MultiplayerGame {
     constructor() {
+        // Connection state
+        this.socket = null;
+        this.gameId = null;
+        this.playerColor = null;
+        this.isMyTurn = false;
+
         // Game state
-        this.board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
-        this.currentPlayer = 1;
-        this.kingPositions = [[0, 4], [8, 4]]; // [row, col] for player 1 and 2
-        this.quadraphageCounts = [30, 30];
-        this.kingMoved = false;
+        this.board = Array(8).fill(null).map(() => Array(8).fill(null));
+        this.currentTurn = 'white';
+        this.selectedPiece = null;
+        this.validMoves = [];
 
         // DOM elements
+        this.menuScreen = document.getElementById('menu-screen');
+        this.gameScreen = document.getElementById('game-screen');
+        this.findGameBtn = document.getElementById('find-game-btn');
+        this.statusText = document.getElementById('status-text');
         this.boardElement = document.getElementById('board');
         this.turnIndicator = document.getElementById('turn-indicator');
-        this.p1CountElement = document.getElementById('p1-count');
-        this.p2CountElement = document.getElementById('p2-count');
-        this.resetBtn = document.getElementById('reset-btn');
+        this.playerColorElement = document.getElementById('player-color');
 
-        // Initialize game
+        // Initialize
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        this.findGameBtn.addEventListener('click', () => this.connectAndFindGame());
+    }
+
+    connectAndFindGame() {
+        this.statusText.textContent = 'Connecting to server...';
+        this.findGameBtn.disabled = true;
+
+        // Connect to Socket.IO server
+        this.socket = io();
+
+        this.socket.on('connect', () => {
+            console.log('Connected to server');
+            this.statusText.textContent = 'Looking for opponent...';
+            this.socket.emit('findGame');
+        });
+
+        this.socket.on('waiting', () => {
+            this.statusText.textContent = 'Waiting for opponent...';
+        });
+
+        this.socket.on('gameStart', (data) => {
+            console.log('Game started:', data);
+            this.gameId = data.gameId;
+            this.playerColor = data.color;
+            this.board = data.board;
+            this.currentTurn = data.currentTurn;
+            this.isMyTurn = this.currentTurn === this.playerColor;
+
+            this.startGame();
+        });
+
+        this.socket.on('moveUpdate', (data) => {
+            console.log('Move update:', data);
+            this.board = data.board;
+            this.currentTurn = data.currentTurn;
+            this.isMyTurn = this.currentTurn === this.playerColor;
+            this.selectedPiece = null;
+            this.validMoves = [];
+
+            this.renderBoard();
+            this.updateTurnIndicator();
+        });
+
+        this.socket.on('gameOver', (data) => {
+            const youWon = data.winner === this.playerColor;
+            setTimeout(() => {
+                alert(youWon ? 'You won!' : 'You lost!');
+            }, 100);
+        });
+
+        this.socket.on('opponentDisconnected', () => {
+            alert('Opponent disconnected. You win!');
+            this.backToMenu();
+        });
+
+        this.socket.on('error', (data) => {
+            console.error('Server error:', data.message);
+            alert(data.message);
+        });
+
+        this.socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            if (this.gameScreen.style.display !== 'none') {
+                alert('Connection lost');
+                this.backToMenu();
+            }
+        });
+    }
+
+    startGame() {
+        this.menuScreen.style.display = 'none';
+        this.gameScreen.style.display = 'block';
+
+        this.playerColorElement.textContent = `You are: ${this.playerColor.charAt(0).toUpperCase() + this.playerColor.slice(1)}`;
+
         this.createBoard();
-        this.placeInitialKings();
-        this.updateUI();
-
-        // Add reset button listener
-        this.resetBtn.addEventListener('click', () => this.resetGame());
+        this.renderBoard();
+        this.updateTurnIndicator();
     }
 
     createBoard() {
         this.boardElement.innerHTML = '';
         this.squares = [];
 
-        for (let row = 0; row < BOARD_SIZE; row++) {
+        for (let row = 0; row < 8; row++) {
             this.squares[row] = [];
-            for (let col = 0; col < BOARD_SIZE; col++) {
+            for (let col = 0; col < 8; col++) {
                 const square = document.createElement('button');
                 square.className = 'square';
+
+                // Alternate colors
+                if ((row + col) % 2 === 0) {
+                    square.classList.add('light');
+                } else {
+                    square.classList.add('dark');
+                }
+
                 square.dataset.row = row;
                 square.dataset.col = col;
                 square.addEventListener('click', () => this.onSquareClick(row, col));
-                square.addEventListener('mouseenter', () => this.onSquareHover(row, col));
-                square.addEventListener('mouseleave', () => this.onSquareLeave(row, col));
+
                 this.boardElement.appendChild(square);
                 this.squares[row][col] = square;
             }
         }
     }
 
-    placeInitialKings() {
-        this.board[0][4] = '👑1';
-        this.board[8][4] = '👑2';
-        this.updateSquare(0, 4);
-        this.updateSquare(8, 4);
-    }
-
-    onSquareClick(row, col) {
-        // Check if square is empty
-        if (this.board[row][col] !== null) {
-            return;
+    renderBoard() {
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                this.updateSquare(row, col);
+            }
         }
-
-        // Phase 1: Move king
-        if (!this.kingMoved && this.isKingMove(row, col)) {
-            this.moveKing(row, col);
-            this.kingMoved = true;
-            this.updateUI();
-        }
-        // Phase 2: Place quadraphage
-        else if (this.kingMoved && this.canPlaceQuadraphage()) {
-            this.placeQuadraphage(row, col);
-            this.quadraphageCounts[this.currentPlayer - 1]--;
-            this.kingMoved = false;
-            this.switchPlayer();
-        }
-
-        this.checkEndCondition();
-    }
-
-    isKingMove(row, col) {
-        const [kingRow, kingCol] = this.kingPositions[this.currentPlayer - 1];
-        const rowDiff = Math.abs(kingRow - row);
-        const colDiff = Math.abs(kingCol - col);
-        return rowDiff <= 1 && colDiff <= 1 && this.board[row][col] === null;
-    }
-
-    moveKing(row, col) {
-        const [oldRow, oldCol] = this.kingPositions[this.currentPlayer - 1];
-
-        // Clear old position
-        this.board[oldRow][oldCol] = null;
-        this.updateSquare(oldRow, oldCol);
-
-        // Set new position
-        this.board[row][col] = `👑${this.currentPlayer}`;
-        this.kingPositions[this.currentPlayer - 1] = [row, col];
-        this.updateSquare(row, col);
-    }
-
-    canPlaceQuadraphage() {
-        return this.quadraphageCounts[this.currentPlayer - 1] > 0;
-    }
-
-    placeQuadraphage(row, col) {
-        const symbol = this.currentPlayer === 1 ? '🔴' : '🔵';
-        this.board[row][col] = symbol;
-        this.updateSquare(row, col);
-    }
-
-    switchPlayer() {
-        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-        this.updateUI();
     }
 
     updateSquare(row, col) {
         const square = this.squares[row][col];
-        const content = this.board[row][col];
+        const piece = this.board[row][col];
 
-        // Clear all classes
-        square.className = 'square';
+        // Clear content
+        square.innerHTML = '';
+        square.classList.remove('selected', 'valid-move', 'has-piece');
 
-        if (content === null) {
-            square.textContent = '';
-        } else if (content === '👑1') {
-            square.textContent = '👑';
-            square.classList.add('king-red');
-            // Add not-clickable class if it's not this king's turn
-            if (this.currentPlayer !== 1) {
-                square.classList.add('not-clickable');
+        // Check if this square is selected
+        if (this.selectedPiece &&
+            this.selectedPiece.row === row &&
+            this.selectedPiece.col === col) {
+            square.classList.add('selected');
+        }
+
+        // Check if this is a valid move
+        if (this.validMoves.some(m => m.row === row && m.col === col)) {
+            square.classList.add('valid-move');
+        }
+
+        // Render piece
+        if (piece) {
+            square.classList.add('has-piece');
+            const pieceElement = document.createElement('div');
+            pieceElement.className = `piece ${piece.type} ${piece.color}`;
+
+            if (piece.type === 'king') {
+                pieceElement.textContent = '♔';
+            } else {
+                pieceElement.textContent = '●';
             }
-        } else if (content === '👑2') {
-            square.textContent = '👑';
-            square.classList.add('king-blue');
-            // Add not-clickable class if it's not this king's turn
-            if (this.currentPlayer !== 2) {
-                square.classList.add('not-clickable');
+
+            square.appendChild(pieceElement);
+        }
+    }
+
+    onSquareClick(row, col) {
+        if (!this.isMyTurn) {
+            return;
+        }
+
+        const piece = this.board[row][col];
+
+        // If a piece is selected
+        if (this.selectedPiece) {
+            // Check if clicked square is a valid move
+            const isValidMove = this.validMoves.some(m => m.row === row && m.col === col);
+
+            if (isValidMove) {
+                // Make the move
+                this.makeMove(this.selectedPiece.row, this.selectedPiece.col, row, col);
+            } else if (piece && piece.color === this.playerColor) {
+                // Select different piece
+                this.selectPiece(row, col);
+            } else {
+                // Deselect
+                this.selectedPiece = null;
+                this.validMoves = [];
+                this.renderBoard();
             }
         } else {
-            square.textContent = content;
-            square.classList.add('occupied');
-        }
-    }
-
-    updateUI() {
-        // Update quadraphage counts
-        this.p1CountElement.textContent = this.quadraphageCounts[0];
-        this.p2CountElement.textContent = this.quadraphageCounts[1];
-
-        // Update turn indicator
-        const playerColor = this.currentPlayer === 1 ? 'Red' : 'Blue';
-        const action = this.kingMoved ? 'Place a Quadraphage' : 'Move the King';
-        this.turnIndicator.textContent = `${playerColor} Player's Turn: ${action}`;
-
-        // Update turn indicator styling
-        this.turnIndicator.className = 'turn-indicator';
-        this.turnIndicator.classList.add(this.currentPlayer === 1 ? 'player1-turn' : 'player2-turn');
-
-        // Update all squares to refresh cursor states
-        for (let row = 0; row < BOARD_SIZE; row++) {
-            for (let col = 0; col < BOARD_SIZE; col++) {
-                this.updateSquare(row, col);
+            // No piece selected, try to select one
+            if (piece && piece.color === this.playerColor) {
+                this.selectPiece(row, col);
             }
         }
-
-        // Add blink effect to current player's king when it's time to move
-        // (Do this AFTER updateSquare so it doesn't get removed)
-        if (!this.kingMoved) {
-            const [kingRow, kingCol] = this.kingPositions[this.currentPlayer - 1];
-            const kingSquare = this.squares[kingRow][kingCol];
-            kingSquare.classList.add('king-active');
-        }
     }
 
-    checkEndCondition() {
-        for (let player = 0; player < 2; player++) {
-            const [kingRow, kingCol] = this.kingPositions[player];
-            if (this.isKingTrapped(kingRow, kingCol)) {
-                const winner = player === 0 ? 2 : 1;
-                const winnerColor = winner === 1 ? 'Red' : 'Blue';
-                const loserColor = winner === 1 ? 'Blue' : 'Red';
-                setTimeout(() => {
-                    alert(`Game Over! ${winnerColor} Player wins! ${loserColor} Player's king is trapped!`);
-                }, 100);
-                return true;
+    selectPiece(row, col) {
+        const piece = this.board[row][col];
+        if (!piece || piece.color !== this.playerColor) {
+            return;
+        }
+
+        this.selectedPiece = { row, col, piece };
+        this.validMoves = this.getValidMoves(row, col);
+        this.renderBoard();
+    }
+
+    getValidMoves(row, col) {
+        const piece = this.board[row][col];
+        if (!piece) return [];
+
+        const moves = [];
+
+        if (piece.type === 'king') {
+            // King moves one square in any direction
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+
+                    if (this.isValidMove(row, col, newRow, newCol)) {
+                        moves.push({ row: newRow, col: newCol });
+                    }
+                }
             }
-        }
-        return false;
-    }
+        } else if (piece.type === 'quadraphage') {
+            // Quadraphage moves one square orthogonally
+            const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
 
-    isKingTrapped(kingRow, kingCol) {
-        // Check all 8 surrounding squares
-        for (let dr = -1; dr <= 1; dr++) {
-            for (let dc = -1; dc <= 1; dc++) {
-                if (dr === 0 && dc === 0) continue;
+            for (const [dr, dc] of directions) {
+                const newRow = row + dr;
+                const newCol = col + dc;
 
-                const newRow = kingRow + dr;
-                const newCol = kingCol + dc;
-
-                // If any square is in bounds and empty, king is not trapped
-                if (newRow >= 0 && newRow < BOARD_SIZE &&
-                    newCol >= 0 && newCol < BOARD_SIZE &&
-                    this.board[newRow][newCol] === null) {
-                    return false;
+                if (this.isValidMove(row, col, newRow, newCol)) {
+                    moves.push({ row: newRow, col: newCol });
                 }
             }
         }
+
+        return moves;
+    }
+
+    isValidMove(fromRow, fromCol, toRow, toCol) {
+        // Check bounds
+        if (toRow < 0 || toRow >= 8 || toCol < 0 || toCol >= 8) {
+            return false;
+        }
+
+        const targetPiece = this.board[toRow][toCol];
+
+        // Can't move to square with own piece
+        if (targetPiece && targetPiece.color === this.playerColor) {
+            return false;
+        }
+
         return true;
     }
 
-    onSquareHover(row, col) {
-        // Only show preview when placing quadraphage and square is empty
-        if (this.kingMoved && this.board[row][col] === null && this.canPlaceQuadraphage()) {
-            const square = this.squares[row][col];
-            const previewSymbol = this.currentPlayer === 1 ? '🔴' : '🔵';
-            square.textContent = previewSymbol;
-            square.classList.add('quad-preview');
+    makeMove(fromRow, fromCol, toRow, toCol) {
+        // Send move to server
+        this.socket.emit('move', {
+            fromRow,
+            fromCol,
+            toRow,
+            toCol
+        });
+
+        // Optimistically update UI (server will send update)
+        this.selectedPiece = null;
+        this.validMoves = [];
+    }
+
+    updateTurnIndicator() {
+        if (this.isMyTurn) {
+            this.turnIndicator.textContent = 'Your turn';
+            this.turnIndicator.className = 'turn-indicator your-turn';
+        } else {
+            this.turnIndicator.textContent = "Opponent's turn";
+            this.turnIndicator.className = 'turn-indicator opponent-turn';
         }
     }
 
-    onSquareLeave(row, col) {
-        // Remove preview if square is still empty
-        if (this.board[row][col] === null) {
-            const square = this.squares[row][col];
-            square.textContent = '';
-            square.classList.remove('quad-preview');
-        }
-    }
+    backToMenu() {
+        this.gameScreen.style.display = 'none';
+        this.menuScreen.style.display = 'flex';
+        this.findGameBtn.disabled = false;
+        this.statusText.textContent = '';
 
-    resetGame() {
-        // Reset all game state
-        this.board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
-        this.currentPlayer = 1;
-        this.kingPositions = [[0, 4], [8, 4]];
-        this.quadraphageCounts = [30, 30];
-        this.kingMoved = false;
-
-        // Reset UI
-        this.placeInitialKings();
-        for (let row = 0; row < BOARD_SIZE; row++) {
-            for (let col = 0; col < BOARD_SIZE; col++) {
-                this.updateSquare(row, col);
-            }
+        if (this.socket) {
+            this.socket.disconnect();
+            this.socket = null;
         }
-        this.updateUI();
     }
 }
 
 // Initialize game when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new KingsAndQuadraphages();
+    new MultiplayerGame();
 });
