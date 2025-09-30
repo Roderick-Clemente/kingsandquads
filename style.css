@@ -156,6 +156,17 @@ h1 {
     box-shadow: none;
 }
 
+.square.king-red.not-clickable,
+.square.king-blue.not-clickable {
+    cursor: not-allowed;
+}
+
+.square.king-red.not-clickable:hover,
+.square.king-blue.not-clickable:hover {
+    transform: none;
+    box-shadow: none;
+}
+
 .square.valid-move {
     background: #d4edda;
     animation: pulse 1s infinite;

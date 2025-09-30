@@ -121,16 +121,16 @@ class KingsAndQuadraphages {
         } else if (content === '👑1') {
             square.textContent = '👑';
             square.classList.add('king-red');
-            // Add occupied class if it's not this king's turn
+            // Add not-clickable class if it's not this king's turn
             if (this.currentPlayer !== 1) {
-                square.classList.add('occupied');
+                square.classList.add('not-clickable');
             }
         } else if (content === '👑2') {
             square.textContent = '👑';
             square.classList.add('king-blue');
-            // Add occupied class if it's not this king's turn
+            // Add not-clickable class if it's not this king's turn
             if (this.currentPlayer !== 2) {
-                square.classList.add('occupied');
+                square.classList.add('not-clickable');
             }
         } else {
             square.textContent = content;
