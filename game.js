@@ -38,6 +38,8 @@ class KingsAndQuadraphages {
                 square.dataset.row = row;
                 square.dataset.col = col;
                 square.addEventListener('click', () => this.onSquareClick(row, col));
+                square.addEventListener('mouseenter', () => this.onSquareHover(row, col));
+                square.addEventListener('mouseleave', () => this.onSquareLeave(row, col));
                 this.boardElement.appendChild(square);
                 this.squares[row][col] = square;
             }
@@ -202,6 +204,25 @@ class KingsAndQuadraphages {
             }
         }
         return true;
+    }
+
+    onSquareHover(row, col) {
+        // Only show preview when placing quadraphage and square is empty
+        if (this.kingMoved && this.board[row][col] === null && this.canPlaceQuadraphage()) {
+            const square = this.squares[row][col];
+            const previewSymbol = this.currentPlayer === 1 ? '🔴' : '🔵';
+            square.textContent = previewSymbol;
+            square.classList.add('quad-preview');
+        }
+    }
+
+    onSquareLeave(row, col) {
+        // Remove preview if square is still empty
+        if (this.board[row][col] === null) {
+            const square = this.squares[row][col];
+            square.textContent = '';
+            square.classList.remove('quad-preview');
+        }
     }
 
     resetGame() {
