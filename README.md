@@ -19,16 +19,14 @@ Buy the physical game from [Math Pentathlon](https://www.mathpentath.org/product
 
 ## Play Options
 
-Both versions are fully functional and supported for now. **The Python version may be sunset in the future.**
-
-### 🌐 Web Version (Recommended)
+### 🌐 Web Version - Local Play
 
 **Files:** `index.html`, `style.css`, `game.js`
 
 **To Play:**
 - Simply open `index.html` in any modern web browser
-- Works on desktop, tablet, and mobile devices
-- No installation required
+- Play locally on the same device (hot seat mode)
+- No installation or server required
 
 **Features:**
 - Modern, responsive UI with gradient design
@@ -39,6 +37,38 @@ Both versions are fully functional and supported for now. **The Python version m
 - Visual feedback (cursor changes for unclickable pieces)
 - Reset button for quick restarts
 - Mobile-friendly
+
+### 🌐 Web Version - Online Multiplayer
+
+**Files:** `server.js`, `index.html`, `style.css`, `game.js`
+
+**Requirements:**
+- Node.js
+- npm
+
+**To Play:**
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start the server:
+   ```bash
+   node server.js
+   ```
+
+3. Open `http://localhost:3000` in your browser
+
+4. (Optional) Share with remote players using ngrok:
+   ```bash
+   ngrok http 3000
+   ```
+
+**Features:**
+- Real-time online multiplayer via Socket.IO
+- Automatic matchmaking
+- Game state synchronization
+- Disconnect handling
 
 ### 🐍 Python Version (Legacy)
 
@@ -58,15 +88,16 @@ python KandQ.py
 - Cross-platform (Windows, Mac, Linux)
 - Basic game mechanics
 
+**Note:** The Python version may be sunset in the future.
+
 ## Development
 
-Current branch: `web-version`
+Current branch: `multiplayer-web`
 
-The web version represents a modernization of the original Python/Tkinter implementation, with improved UI/UX while maintaining all core game mechanics.
+The web version represents a modernization of the original Python/Tkinter implementation, with improved UI/UX and online multiplayer support.
 
 ## Future Enhancements
 - AI opponent for single-player mode
-- Online multiplayer support
 
 ## License
 This project is open source, and you are free to modify and distribute it as you wish.

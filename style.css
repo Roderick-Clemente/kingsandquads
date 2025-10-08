@@ -216,13 +216,30 @@ h1 {
 .square {
     background: white;
     border: none;
-    font-size: 2em;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     border-radius: 4px;
+    position: relative;
+    padding: 4px;
+}
+
+.square-content {
+    font-size: 2.5em;
+    flex-shrink: 0;
+}
+
+.square-label {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    font-size: 1em;
+    font-weight: bold;
+    color: #666;
+    pointer-events: none;
 }
 
 .square:hover {

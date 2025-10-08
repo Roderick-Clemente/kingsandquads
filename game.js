@@ -31,6 +31,20 @@ class BaseGame {
                 square.className = 'square';
                 square.dataset.row = row;
                 square.dataset.col = col;
+
+                // Create coordinate label (e.g., "A1", "B3")
+                const label = document.createElement('div');
+                label.className = 'square-label';
+                const colLetter = String.fromCharCode(65 + col); // A-I
+                const rowNumber = row + 1; // 1-9
+                label.textContent = `${colLetter}${rowNumber}`;
+                square.appendChild(label);
+
+                // Create content container for emojis
+                const content = document.createElement('div');
+                content.className = 'square-content';
+                square.appendChild(content);
+
                 square.addEventListener('click', () => this.onSquareClick(row, col));
                 square.addEventListener('mouseenter', () => this.onSquareHover(row, col));
                 square.addEventListener('mouseleave', () => this.onSquareLeave(row, col));
@@ -53,26 +67,27 @@ class BaseGame {
 
     updateSquare(row, col) {
         const square = this.squares[row][col];
-        const content = this.board[row][col];
+        const contentDiv = square.querySelector('.square-content');
+        const boardContent = this.board[row][col];
 
         square.className = 'square';
 
-        if (content === null) {
-            square.textContent = '';
-        } else if (content === '👑1') {
-            square.textContent = '👑';
+        if (boardContent === null) {
+            contentDiv.textContent = '';
+        } else if (boardContent === '👑1') {
+            contentDiv.textContent = '👑';
             square.classList.add('king-red');
             if (this.currentPlayer !== 1) {
                 square.classList.add('not-clickable');
             }
-        } else if (content === '👑2') {
-            square.textContent = '👑';
+        } else if (boardContent === '👑2') {
+            contentDiv.textContent = '👑';
             square.classList.add('king-blue');
             if (this.currentPlayer !== 2) {
                 square.classList.add('not-clickable');
             }
         } else {
-            square.textContent = content;
+            contentDiv.textContent = boardContent;
             square.classList.add('occupied');
         }
     }
@@ -118,8 +133,9 @@ class BaseGame {
     onSquareHover(row, col) {
         if (this.shouldShowQuadPreview(row, col)) {
             const square = this.squares[row][col];
+            const contentDiv = square.querySelector('.square-content');
             const previewSymbol = this.currentPlayer === 1 ? '🔴' : '🔵';
-            square.textContent = previewSymbol;
+            contentDiv.textContent = previewSymbol;
             square.classList.add('quad-preview');
         }
     }
@@ -127,7 +143,8 @@ class BaseGame {
     onSquareLeave(row, col) {
         if (this.board[row][col] === null) {
             const square = this.squares[row][col];
-            square.textContent = '';
+            const contentDiv = square.querySelector('.square-content');
+            contentDiv.textContent = '';
             square.classList.remove('quad-preview');
         }
     }
