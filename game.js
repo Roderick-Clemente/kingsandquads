@@ -1,6 +1,56 @@
 // Kings and Quadraphages Game - Local and Network Multiplayer
 const BOARD_SIZE = 9;
 
+// Audio context for turn sound
+let audioContext = null;
+let soundEnabled = true;
+
+// Initialize sound toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const soundToggle = document.getElementById('sound-toggle');
+    if (soundToggle) {
+        soundToggle.addEventListener('change', (e) => {
+            soundEnabled = e.target.checked;
+        });
+    }
+});
+
+// Function to play a simple ding sound
+function playTurnSound() {
+    if (!soundEnabled) return;
+
+    try {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        // Simple pleasant ding: two quick notes
+        oscillator.frequency.value = 800;
+        gainNode.gain.value = 0.3;
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+
+        // Second note
+        const oscillator2 = audioContext.createOscillator();
+        const gainNode2 = audioContext.createGain();
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioContext.destination);
+        oscillator2.frequency.value = 1000;
+        gainNode2.gain.value = 0.2;
+        oscillator2.start(audioContext.currentTime + 0.1);
+        oscillator2.stop(audioContext.currentTime + 0.2);
+    } catch (error) {
+        console.log('Audio not supported:', error);
+    }
+}
+
 // Base Game Class - Shared logic for both modes
 class BaseGame {
     constructor() {
@@ -179,18 +229,21 @@ class BaseGame {
     }
 
     checkEndCondition() {
-        for (let player = 0; player < 2; player++) {
-            const [kingRow, kingCol] = this.kingPositions[player];
-            if (this.isKingTrapped(kingRow, kingCol)) {
-                const winner = player === 0 ? 2 : 1;
-                const winnerColor = winner === 1 ? 'Red' : 'Blue';
-                const loserColor = winner === 1 ? 'Blue' : 'Red';
+        // After switchPlayer() is called, currentPlayer is now the NEXT player to move
+        // So we check if currentPlayer's king is trapped - if so, the PREVIOUS player wins
+        const [kingRow, kingCol] = this.kingPositions[this.currentPlayer - 1];
 
-                // Trigger celebration animation
-                this.celebrateWin(winner, winnerColor, loserColor);
-                return true;
-            }
+        if (this.isKingTrapped(kingRow, kingCol)) {
+            // The current player's king is trapped, so the OTHER player wins
+            const winner = this.currentPlayer === 1 ? 2 : 1;
+            const winnerColor = winner === 1 ? 'Red' : 'Blue';
+            const loserColor = winner === 1 ? 'Blue' : 'Red';
+
+            // Trigger celebration animation
+            this.celebrateWin(winner, winnerColor, loserColor);
+            return true;
         }
+
         return false;
     }
 
@@ -281,6 +334,7 @@ class LocalGame extends BaseGame {
 
     switchPlayer() {
         this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+        playTurnSound();
         this.updateUI();
     }
 }

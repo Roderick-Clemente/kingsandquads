@@ -121,6 +121,32 @@ h1 {
     border-radius: 10px;
 }
 
+.settings-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+}
+
+.sound-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 0.9em;
+    transition: background 0.2s ease;
+}
+
+.sound-toggle:hover {
+    background: #e9ecef;
+}
+
+.sound-toggle input[type="checkbox"] {
+    cursor: pointer;
+}
+
 .game-info {
     display: flex;
     justify-content: space-between;
