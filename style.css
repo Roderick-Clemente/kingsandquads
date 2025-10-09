@@ -289,6 +289,10 @@ h1 {
     opacity: 0.5;
 }
 
+.square.king-preview {
+    opacity: 0.4;
+}
+
 /* Firework celebration animation */
 .square.firework {
     animation: fireworkBurst 1.5s ease-out infinite;

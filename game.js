@@ -131,12 +131,17 @@ class BaseGame {
     }
 
     onSquareHover(row, col) {
+        const square = this.squares[row][col];
+        const contentDiv = square.querySelector('.square-content');
+
         if (this.shouldShowQuadPreview(row, col)) {
-            const square = this.squares[row][col];
-            const contentDiv = square.querySelector('.square-content');
             const previewSymbol = this.currentPlayer === 1 ? '🔴' : '🔵';
             contentDiv.textContent = previewSymbol;
             square.classList.add('quad-preview');
+        } else if (!this.kingMoved && this.board[row][col] === null && this.isKingMove(row, col)) {
+            // Show ghost king preview for valid king moves
+            contentDiv.textContent = '👑';
+            square.classList.add('king-preview');
         }
     }
 
@@ -146,6 +151,7 @@ class BaseGame {
             const contentDiv = square.querySelector('.square-content');
             contentDiv.textContent = '';
             square.classList.remove('quad-preview');
+            square.classList.remove('king-preview');
         }
     }
 
