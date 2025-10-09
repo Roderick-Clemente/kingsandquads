@@ -51,6 +51,85 @@ function playTurnSound() {
     }
 }
 
+// Function to play celebratory tada music
+function playWinSound() {
+    if (!soundEnabled) return;
+
+    try {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        const now = audioContext.currentTime;
+
+        // Triumphant ascending melody
+        const notes = [
+            { freq: 523, time: 0, duration: 0.15 },      // C
+            { freq: 659, time: 0.15, duration: 0.15 },   // E
+            { freq: 784, time: 0.3, duration: 0.15 },    // G
+            { freq: 1047, time: 0.45, duration: 0.3 },   // C high
+            { freq: 784, time: 0.75, duration: 0.1 },    // G
+            { freq: 1047, time: 0.85, duration: 0.4 }    // C high (hold)
+        ];
+
+        notes.forEach(note => {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.frequency.value = note.freq;
+            gain.gain.setValueAtTime(0.3, now + note.time);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + note.duration);
+
+            osc.start(now + note.time);
+            osc.stop(now + note.time + note.duration);
+        });
+    } catch (error) {
+        console.log('Audio not supported:', error);
+    }
+}
+
+// Function to play sad awww sound
+function playLossSound() {
+    if (!soundEnabled) return;
+
+    try {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        const now = audioContext.currentTime;
+
+        // Descending sad melody
+        const notes = [
+            { freq: 523, time: 0, duration: 0.2 },       // C
+            { freq: 466, time: 0.2, duration: 0.2 },     // A#
+            { freq: 392, time: 0.4, duration: 0.2 },     // G
+            { freq: 349, time: 0.6, duration: 0.4 }      // F (hold)
+        ];
+
+        notes.forEach(note => {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.frequency.value = note.freq;
+            osc.type = 'sine';
+            gain.gain.setValueAtTime(0.25, now + note.time);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + note.duration);
+
+            osc.start(now + note.time);
+            osc.stop(now + note.time + note.duration);
+        });
+    } catch (error) {
+        console.log('Audio not supported:', error);
+    }
+}
+
 // Base Game Class - Shared logic for both modes
 class BaseGame {
     constructor() {
@@ -271,8 +350,14 @@ class BaseGame {
 
         // Show victory message after fireworks start
         setTimeout(() => {
-            alert(`Game Over! ${winnerColor} Player wins! ${loserColor} Player's king is trapped!`);
+            this.showGameOverMessage(winner, winnerColor, loserColor);
         }, delay + 500);
+    }
+
+    showGameOverMessage(winner, winnerColor, loserColor) {
+        // Default implementation for local game - play win sound and show message
+        playWinSound();
+        alert(`🎉 Game Over!\n\n${winnerColor} Player wins!\n${loserColor} Player's king is trapped!`);
     }
 
     // Abstract method - must be implemented by subclasses
@@ -402,10 +487,15 @@ class NetworkGame extends BaseGame {
             const youWon = data.winner === this.playerNumber;
             const winnerColor = data.winner === 1 ? 'Red' : 'Blue';
             const loserColor = data.winner === 1 ? 'Blue' : 'Red';
+
             setTimeout(() => {
-                alert(youWon
-                    ? `You won! ${loserColor} Player's king is trapped!`
-                    : `You lost! ${winnerColor} Player wins!`);
+                if (youWon) {
+                    playWinSound();
+                    alert(`🎉 You won! ${loserColor} Player's king is trapped!`);
+                } else {
+                    playLossSound();
+                    alert(`😔 You lost! ${winnerColor} Player wins!\n\nBetter luck next time!`);
+                }
             }, 100);
         });
 
