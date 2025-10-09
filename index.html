@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kings and Quadraphages - Multiplayer</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -35,6 +36,7 @@
             <div id="player-number" class="player-number"></div>
 
             <div class="settings-bar">
+                <button id="help-btn" class="help-btn" title="How to Play">❓</button>
                 <label class="sound-toggle">
                     <input type="checkbox" id="sound-toggle" checked>
                     <span>🔔 Sound</span>
@@ -60,6 +62,48 @@
             </div>
 
             <div id="board" class="board"></div>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="help-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>📖 How to Play</h2>
+
+                <div class="rules-section">
+                    <h3>🎯 Objective</h3>
+                    <p>Trap your opponent's King so it has no valid moves!</p>
+                </div>
+
+                <div class="rules-section">
+                    <h3>🎮 Game Setup</h3>
+                    <ul>
+                        <li><strong>Board:</strong> 9×9 grid</li>
+                        <li><strong>Players:</strong> Red vs Blue</li>
+                        <li><strong>Pieces:</strong> 1 King 👑 and 30 Quadraphages 🔴/🔵 per player</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <h3>🎲 How to Play</h3>
+                    <ol>
+                        <li><strong>Move your King:</strong> Click an adjacent square (including diagonally) to move your King one space</li>
+                        <li><strong>Place a Quadraphage:</strong> After moving your King, click any empty square to place a Quadraphage</li>
+                        <li><strong>Switch turns:</strong> Your opponent now takes their turn</li>
+                        <li><strong>Win:</strong> Trap your opponent's King so it cannot move!</li>
+                    </ol>
+                </div>
+
+                <div class="rules-section">
+                    <h3>💡 Tips</h3>
+                    <ul>
+                        <li>Kings can move to any adjacent square (8 directions)</li>
+                        <li>Plan ahead - each Quadraphage placement reduces available space</li>
+                        <li>Try to corner your opponent while keeping your King mobile</li>
+                        <li>You have 30 Quadraphages - use them strategically!</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 

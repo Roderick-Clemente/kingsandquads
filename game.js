@@ -5,12 +5,33 @@ const BOARD_SIZE = 9;
 let audioContext = null;
 let soundEnabled = true;
 
-// Initialize sound toggle
+// Initialize sound toggle and help modal
 document.addEventListener('DOMContentLoaded', () => {
     const soundToggle = document.getElementById('sound-toggle');
     if (soundToggle) {
         soundToggle.addEventListener('change', (e) => {
             soundEnabled = e.target.checked;
+        });
+    }
+
+    // Help modal functionality
+    const helpBtn = document.getElementById('help-btn');
+    const helpModal = document.getElementById('help-modal');
+    const closeBtn = document.querySelector('.close');
+
+    if (helpBtn && helpModal && closeBtn) {
+        helpBtn.addEventListener('click', () => {
+            helpModal.style.display = 'block';
+        });
+
+        closeBtn.addEventListener('click', () => {
+            helpModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.style.display = 'none';
+            }
         });
     }
 });
