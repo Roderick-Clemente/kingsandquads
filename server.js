@@ -85,12 +85,13 @@ class Game {
         this.board[row][col] = symbol;
         this.quadraphageCounts[this.currentPlayer - 1]--;
 
-        // Check for game over
-        this.checkGameOver();
-
         // Switch turn
         this.kingMoved = false;
         this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+
+        // Check for game over AFTER switching turn
+        // If the current player's king is trapped, the OTHER player wins
+        this.checkGameOver();
 
         return {
             success: true,
@@ -105,12 +106,14 @@ class Game {
     }
 
     checkGameOver() {
-        for (let player = 0; player < 2; player++) {
-            const [kingRow, kingCol] = this.kingPositions[player];
-            if (this.isKingTrapped(kingRow, kingCol)) {
-                this.gameOver = true;
-                this.winner = player === 0 ? 2 : 1; // The other player wins
-            }
+        // After switchPlayer() is called, currentPlayer is now the NEXT player to move
+        // So we check if currentPlayer's king is trapped - if so, the PREVIOUS player wins
+        const [kingRow, kingCol] = this.kingPositions[this.currentPlayer - 1];
+
+        if (this.isKingTrapped(kingRow, kingCol)) {
+            // The current player's king is trapped, so the OTHER player wins
+            this.gameOver = true;
+            this.winner = this.currentPlayer === 1 ? 2 : 1;
         }
     }
 
