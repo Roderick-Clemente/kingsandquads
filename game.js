@@ -478,12 +478,21 @@ class NetworkGame extends BaseGame {
 
         this.socket.on('gameUpdate', (data) => {
             console.log('Game update:', data);
+
+            // Check if turn switched (quadraphage was placed)
+            const turnSwitched = this.currentPlayer !== data.currentPlayer;
+
             this.board = data.board;
             this.currentPlayer = data.currentPlayer;
             this.kingMoved = data.kingMoved;
             this.kingPositions = data.kingPositions;
             this.quadraphageCounts = data.quadraphageCounts;
             this.isMyTurn = this.currentPlayer === this.playerNumber;
+
+            // Play turn sound when turn switches
+            if (turnSwitched) {
+                playTurnSound();
+            }
 
             this.updateUI();
         });
