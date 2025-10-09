@@ -267,7 +267,7 @@ class BaseGame {
             const previewSymbol = this.currentPlayer === 1 ? '🔴' : '🔵';
             contentDiv.textContent = previewSymbol;
             square.classList.add('quad-preview');
-        } else if (!this.kingMoved && this.board[row][col] === null && this.isKingMove(row, col)) {
+        } else if (this.shouldShowKingPreview(row, col)) {
             // Show ghost king preview for valid king moves
             contentDiv.textContent = '👑';
             square.classList.add('king-preview');
@@ -287,6 +287,11 @@ class BaseGame {
     shouldShowQuadPreview(row, col) {
         // Default - subclasses can override for network mode
         return this.kingMoved && this.board[row][col] === null && this.canPlaceQuadraphage();
+    }
+
+    shouldShowKingPreview(row, col) {
+        // Default - subclasses can override for network mode
+        return !this.kingMoved && this.board[row][col] === null && this.isKingMove(row, col);
     }
 
     isKingTrapped(kingRow, kingCol) {
@@ -564,6 +569,11 @@ class NetworkGame extends BaseGame {
     // Override shouldShowQuadPreview for network mode
     shouldShowQuadPreview(row, col) {
         return this.isMyTurn && this.kingMoved && this.board[row][col] === null && this.canPlaceQuadraphage();
+    }
+
+    // Override shouldShowKingPreview for network mode
+    shouldShowKingPreview(row, col) {
+        return this.isMyTurn && !this.kingMoved && this.board[row][col] === null && this.isKingMove(row, col);
     }
 
     backToMenu() {
