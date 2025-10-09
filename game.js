@@ -292,6 +292,7 @@ class BaseGame {
             // Show ghost king preview for valid king moves
             contentDiv.textContent = '👑';
             square.classList.add('king-preview');
+            square.classList.add(this.currentPlayer === 1 ? 'preview-red' : 'preview-blue');
         }
     }
 
@@ -301,7 +302,7 @@ class BaseGame {
             const contentDiv = square.querySelector('.square-content');
             contentDiv.textContent = '';
             square.classList.remove('quad-preview');
-            square.classList.remove('king-preview');
+            square.classList.remove('king-preview', 'preview-red', 'preview-blue');
         }
     }
 
