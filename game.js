@@ -1,11 +1,26 @@
-// Kings and Quadraphages Game - Local and Network Multiplayer
+/**
+ * Kings and Quadraphages Game - Local and Network Multiplayer
+ * 
+ * A strategic two-player board game where players move their kings and place
+ * quadraphages to trap their opponent's king.
+ * 
+ * @author Kings and Quadraphages Team
+ * @version 1.0.0
+ */
+
+/** @constant {number} BOARD_SIZE - Size of the game board (9x9) */
 const BOARD_SIZE = 9;
 
-// Audio context for turn sound
+/** @type {AudioContext|null} Global audio context for sound effects */
 let audioContext = null;
+
+/** @type {boolean} Global flag to enable/disable sound effects */
 let soundEnabled = true;
 
-// Initialize sound toggle and help modal
+/**
+ * Initialize sound toggle and help modal on page load
+ * Sets up event listeners for UI controls
+ */
 document.addEventListener('DOMContentLoaded', () => {
     const soundToggle = document.getElementById('sound-toggle');
     if (soundToggle) {
@@ -36,7 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Function to play a simple ding sound
+/**
+ * Plays a pleasant two-note ding sound when a turn is completed
+ * Uses Web Audio API to generate oscillator tones
+ * 
+ * @returns {void}
+ */
 function playTurnSound() {
     if (!soundEnabled) return;
 
@@ -72,7 +92,12 @@ function playTurnSound() {
     }
 }
 
-// Function to play celebratory tada music
+/**
+ * Plays a celebratory ascending melody when a player wins
+ * Creates a triumphant C-E-G-C progression
+ * 
+ * @returns {void}
+ */
 function playWinSound() {
     if (!soundEnabled) return;
 
@@ -112,7 +137,12 @@ function playWinSound() {
     }
 }
 
-// Function to play sad awww sound
+/**
+ * Plays a descending sad melody when a player loses
+ * Creates a melancholic C-A#-G-F progression
+ * 
+ * @returns {void}
+ */
 function playLossSound() {
     if (!soundEnabled) return;
 
@@ -151,25 +181,69 @@ function playLossSound() {
     }
 }
 
-// Base Game Class - Shared logic for both modes
+/**
+ * Base Game Class - Shared logic for both local and network modes
+ * 
+ * Contains all common game logic including:
+ * - Board state management
+ * - UI rendering and updates
+ * - Move validation
+ * - Win condition checking
+ * - Visual effects and animations
+ * 
+ * @abstract
+ * @class
+ */
 class BaseGame {
+    /**
+     * Initializes the base game state and DOM references
+     * 
+     * @constructor
+     */
     constructor() {
         // Game state
+        /** @type {Array<Array<string|null>>} 2D array representing the board */
         this.board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+        
+        /** @type {number} Current player (1 or 2) */
         this.currentPlayer = 1;
+        
+        /** @type {Array<Array<number>>} King positions [row, col] for each player */
         this.kingPositions = [[0, 4], [8, 4]];
+        
+        /** @type {Array<number>} Remaining quadraphages for each player */
         this.quadraphageCounts = [30, 30];
+        
+        /** @type {boolean} Whether the current player has moved their king this turn */
         this.kingMoved = false;
 
         // DOM elements
+        /** @type {HTMLElement} The game board container */
         this.boardElement = document.getElementById('board');
+        
+        /** @type {HTMLElement} Turn indicator text element */
         this.turnIndicator = document.getElementById('turn-indicator');
+        
+        /** @type {HTMLElement} Player 1 quadraphage count display */
         this.p1CountElement = document.getElementById('p1-count');
+        
+        /** @type {HTMLElement} Player 2 quadraphage count display */
         this.p2CountElement = document.getElementById('p2-count');
+        
+        /** @type {HTMLElement} Player number/color display */
         this.playerNumberElement = document.getElementById('player-number');
+        
+        /** @type {Array<Array<HTMLElement>>} 2D array of square DOM elements */
         this.squares = [];
     }
 
+    /**
+     * Creates the game board DOM structure
+     * Generates a 9x9 grid with coordinate labels (A1-I9)
+     * Attaches event listeners for click, hover, and leave events
+     * 
+     * @returns {void}
+     */
     createBoard() {
         this.boardElement.innerHTML = '';
         this.squares = [];
@@ -204,6 +278,14 @@ class BaseGame {
         }
     }
 
+    /**
+     * Checks if a move to the specified position is a valid king move
+     * Kings can move one square in any direction (8-directional)
+     * 
+     * @param {number} row - Target row (0-8)
+     * @param {number} col - Target column (0-8)
+     * @returns {boolean} True if the move is valid for the current player's king
+     */
     isKingMove(row, col) {
         const [kingRow, kingCol] = this.kingPositions[this.currentPlayer - 1];
         const rowDiff = Math.abs(kingRow - row);
@@ -211,10 +293,23 @@ class BaseGame {
         return rowDiff <= 1 && colDiff <= 1 && this.board[row][col] === null;
     }
 
+    /**
+     * Checks if the current player can place a quadraphage
+     * 
+     * @returns {boolean} True if the player has quadraphages remaining
+     */
     canPlaceQuadraphage() {
         return this.quadraphageCounts[this.currentPlayer - 1] > 0;
     }
 
+    /**
+     * Updates the visual representation of a single square
+     * Sets appropriate emoji, styling, and CSS classes based on square content
+     * 
+     * @param {number} row - Row index (0-8)
+     * @param {number} col - Column index (0-8)
+     * @returns {void}
+     */
     updateSquare(row, col) {
         const square = this.squares[row][col];
         const contentDiv = square.querySelector('.square-content');
@@ -242,6 +337,13 @@ class BaseGame {
         }
     }
 
+    /**
+     * Updates the entire game UI
+     * Refreshes quadraphage counts, turn indicator, and all board squares
+     * Adds visual effects like king blinking when it's time to move
+     * 
+     * @returns {void}
+     */
     updateUI() {
         this.p1CountElement.textContent = this.quadraphageCounts[0];
         this.p2CountElement.textContent = this.quadraphageCounts[1];
@@ -268,18 +370,36 @@ class BaseGame {
         }
     }
 
+    /**
+     * Gets the turn indicator text
+     * Can be overridden by subclasses for custom messaging
+     * 
+     * @returns {string} Text describing whose turn it is and what action to take
+     */
     getTurnText() {
-        // Default implementation - subclasses can override
         const playerColor = this.currentPlayer === 1 ? 'Red' : 'Blue';
         const action = this.kingMoved ? 'Place a Quadraphage' : 'Move the King';
         return `${playerColor} Player's Turn: ${action}`;
     }
 
+    /**
+     * Adds CSS classes to the turn indicator element
+     * Can be overridden by subclasses for custom styling
+     * 
+     * @returns {void}
+     */
     addTurnIndicatorClasses() {
-        // Default implementation - subclasses can override
         this.turnIndicator.classList.add(this.currentPlayer === 1 ? 'player1-turn' : 'player2-turn');
     }
 
+    /**
+     * Handles mouse hover over a square
+     * Shows preview of quadraphage or king placement
+     * 
+     * @param {number} row - Row index (0-8)
+     * @param {number} col - Column index (0-8)
+     * @returns {void}
+     */
     onSquareHover(row, col) {
         const square = this.squares[row][col];
         const contentDiv = square.querySelector('.square-content');
@@ -296,6 +416,14 @@ class BaseGame {
         }
     }
 
+    /**
+     * Handles mouse leave from a square
+     * Removes preview effects from empty squares
+     * 
+     * @param {number} row - Row index (0-8)
+     * @param {number} col - Column index (0-8)
+     * @returns {void}
+     */
     onSquareLeave(row, col) {
         if (this.board[row][col] === null) {
             const square = this.squares[row][col];
@@ -306,16 +434,38 @@ class BaseGame {
         }
     }
 
+    /**
+     * Determines if a quadraphage preview should be shown on hover
+     * Can be overridden by subclasses (e.g., network mode checks turn)
+     * 
+     * @param {number} row - Row index (0-8)
+     * @param {number} col - Column index (0-8)
+     * @returns {boolean} True if preview should be shown
+     */
     shouldShowQuadPreview(row, col) {
-        // Default - subclasses can override for network mode
         return this.kingMoved && this.board[row][col] === null && this.canPlaceQuadraphage();
     }
 
+    /**
+     * Determines if a king preview should be shown on hover
+     * Can be overridden by subclasses (e.g., network mode checks turn)
+     * 
+     * @param {number} row - Row index (0-8)
+     * @param {number} col - Column index (0-8)
+     * @returns {boolean} True if preview should be shown
+     */
     shouldShowKingPreview(row, col) {
-        // Default - subclasses can override for network mode
         return !this.kingMoved && this.board[row][col] === null && this.isKingMove(row, col);
     }
 
+    /**
+     * Checks if a king at the specified position is trapped
+     * A king is trapped if all 8 surrounding squares are occupied
+     * 
+     * @param {number} kingRow - King's row position (0-8)
+     * @param {number} kingCol - King's column position (0-8)
+     * @returns {boolean} True if the king has no valid moves
+     */
     isKingTrapped(kingRow, kingCol) {
         for (let dr = -1; dr <= 1; dr++) {
             for (let dc = -1; dc <= 1; dc++) {
@@ -334,9 +484,16 @@ class BaseGame {
         return true;
     }
 
+    /**
+     * Checks if the game has ended (king is trapped)
+     * Should be called after each turn completes
+     * 
+     * Note: After switchPlayer() is called, currentPlayer is the NEXT player to move.
+     * If currentPlayer's king is trapped, the PREVIOUS player wins.
+     * 
+     * @returns {boolean} True if the game has ended
+     */
     checkEndCondition() {
-        // After switchPlayer() is called, currentPlayer is now the NEXT player to move
-        // So we check if currentPlayer's king is trapped - if so, the PREVIOUS player wins
         const [kingRow, kingCol] = this.kingPositions[this.currentPlayer - 1];
 
         if (this.isKingTrapped(kingRow, kingCol)) {
@@ -353,8 +510,16 @@ class BaseGame {
         return false;
     }
 
+    /**
+     * Triggers celebration animation when a player wins
+     * Converts all quadraphages to fireworks with staggered timing
+     * 
+     * @param {number} winner - Winning player number (1 or 2)
+     * @param {string} winnerColor - Color name of winner ('Red' or 'Blue')
+     * @param {string} loserColor - Color name of loser ('Red' or 'Blue')
+     * @returns {void}
+     */
     celebrateWin(winner, winnerColor, loserColor) {
-        // Convert all quadraphages to fireworks with staggered animation
         let delay = 0;
         const fireworkSquares = [];
 
@@ -381,27 +546,40 @@ class BaseGame {
         }, delay + 500);
     }
 
+    /**
+     * Displays the game over message
+     * Can be overridden by subclasses for custom messaging
+     * 
+     * @param {number} winner - Winning player number (1 or 2)
+     * @param {string} winnerColor - Color name of winner ('Red' or 'Blue')
+     * @param {string} loserColor - Color name of loser ('Red' or 'Blue')
+     * @returns {void}
+     */
     showGameOverMessage(winner, winnerColor, loserColor) {
-        // Default implementation for local game - play win sound and show message
         playWinSound();
         alert(`🎉 Game Over!\n\n${winnerColor} Player wins!\n${loserColor} Player's king is trapped!`);
     }
 
-    // Abstract method - must be implemented by subclasses
+    /**
+     * Handles square click events
+     * ABSTRACT METHOD - Must be implemented by subclasses
+     * 
+     * @abstract
+     * @param {number} row - Row index (0-8)
+     * @param {number} col - Column index (0-8)
+     * @throws {Error} If not implemented by subclass
+     * @returns {void}
+     */
     onSquareClick(row, col) {
         throw new Error('onSquareClick must be implemented by subclass');
     }
-}
 
-// Local Multiplayer Game - All game logic runs client-side
-class LocalGame extends BaseGame {
-    constructor() {
-        super();
-        this.createBoard();
-        this.placeInitialKings();
-        this.updateUI();
-    }
-
+    /**
+     * Places the initial kings on the board at starting positions
+     * Red king at A1 (top center), Blue king at I1 (bottom center)
+     * 
+     * @returns {void}
+     */
     placeInitialKings() {
         this.board[0][4] = '👑1';
         this.board[8][4] = '👑2';
@@ -409,6 +587,82 @@ class LocalGame extends BaseGame {
         this.updateSquare(8, 4);
     }
 
+    /**
+     * Moves the current player's king to a new position
+     * Updates board state and visual representation
+     * 
+     * @param {number} row - Target row (0-8)
+     * @param {number} col - Target column (0-8)
+     * @returns {void}
+     */
+    moveKing(row, col) {
+        const [oldRow, oldCol] = this.kingPositions[this.currentPlayer - 1];
+        this.board[oldRow][oldCol] = null;
+        this.updateSquare(oldRow, oldCol);
+
+        this.board[row][col] = `👑${this.currentPlayer}`;
+        this.kingPositions[this.currentPlayer - 1] = [row, col];
+        this.updateSquare(row, col);
+    }
+
+    /**
+     * Places a quadraphage at the specified position
+     * Uses current player's color (red or blue)
+     * 
+     * @param {number} row - Target row (0-8)
+     * @param {number} col - Target column (0-8)
+     * @returns {void}
+     */
+    placeQuadraphage(row, col) {
+        const symbol = this.currentPlayer === 1 ? '🔴' : '🔵';
+        this.board[row][col] = symbol;
+        this.updateSquare(row, col);
+    }
+
+    /**
+     * Switches to the other player's turn
+     * Plays turn sound and updates UI
+     * 
+     * @returns {void}
+     */
+    switchPlayer() {
+        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+        playTurnSound();
+        this.updateUI();
+    }
+}
+
+/**
+ * Local Multiplayer Game - All game logic runs client-side
+ * 
+ * Implements a local two-player game where both players share the same device.
+ * All game state and logic is managed on the client without server communication.
+ * 
+ * @extends BaseGame
+ * @class
+ */
+class LocalGame extends BaseGame {
+    /**
+     * Initializes a new local game
+     * Creates the board, places initial kings, and starts the game
+     * 
+     * @constructor
+     */
+    constructor() {
+        super();
+        this.createBoard();
+        this.placeInitialKings();
+        this.updateUI();
+    }
+
+    /**
+     * Handles square click events for local game
+     * Processes king moves and quadraphage placements
+     * 
+     * @param {number} row - Row index (0-8)
+     * @param {number} col - Column index (0-8)
+     * @returns {void}
+     */
     onSquareClick(row, col) {
         if (this.board[row][col] !== null) {
             return;
@@ -427,49 +681,60 @@ class LocalGame extends BaseGame {
 
         this.checkEndCondition();
     }
-
-    moveKing(row, col) {
-        const [oldRow, oldCol] = this.kingPositions[this.currentPlayer - 1];
-        this.board[oldRow][oldCol] = null;
-        this.updateSquare(oldRow, oldCol);
-
-        this.board[row][col] = `👑${this.currentPlayer}`;
-        this.kingPositions[this.currentPlayer - 1] = [row, col];
-        this.updateSquare(row, col);
-    }
-
-    placeQuadraphage(row, col) {
-        const symbol = this.currentPlayer === 1 ? '🔴' : '🔵';
-        this.board[row][col] = symbol;
-        this.updateSquare(row, col);
-    }
-
-    switchPlayer() {
-        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-        playTurnSound();
-        this.updateUI();
-    }
 }
 
-// Network Multiplayer Game - Game logic runs on server
+/**
+ * Network Multiplayer Game - Game logic runs on server
+ * 
+ * Implements online multiplayer using Socket.IO for real-time communication.
+ * The server manages game state and validates all moves.
+ * Clients send move requests and receive state updates.
+ * 
+ * @extends BaseGame
+ * @class
+ */
 class NetworkGame extends BaseGame {
+    /**
+     * Initializes a new network game
+     * Connects to the server and starts matchmaking
+     * 
+     * @constructor
+     */
     constructor() {
         super();
 
         // Network-specific state
+        /** @type {Socket|null} Socket.IO connection to game server */
         this.socket = null;
+        
+        /** @type {string|null} Unique identifier for this game session */
         this.gameId = null;
+        
+        /** @type {number|null} This player's number (1 or 2) */
         this.playerNumber = null;
+        
+        /** @type {boolean} Whether it's currently this player's turn */
         this.isMyTurn = false;
 
         // Additional DOM elements
+        /** @type {HTMLElement} Menu screen element */
         this.menuScreen = document.getElementById('menu-screen');
+        
+        /** @type {HTMLElement} Game screen element */
         this.gameScreen = document.getElementById('game-screen');
+        
+        /** @type {HTMLElement} Status text element for connection messages */
         this.statusText = document.getElementById('status-text');
 
         this.connectAndFindGame();
     }
 
+    /**
+     * Connects to the game server and initiates matchmaking
+     * Sets up all Socket.IO event listeners for game communication
+     * 
+     * @returns {void}
+     */
     connectAndFindGame() {
         this.statusText.textContent = 'Connecting to server...';
         this.socket = io();
@@ -553,6 +818,12 @@ class NetworkGame extends BaseGame {
         });
     }
 
+    /**
+     * Starts the network game after matchmaking completes
+     * Transitions from menu to game screen and initializes the board
+     * 
+     * @returns {void}
+     */
     startGame() {
         this.menuScreen.style.display = 'none';
         this.gameScreen.style.display = 'block';
@@ -564,6 +835,14 @@ class NetworkGame extends BaseGame {
         this.updateUI();
     }
 
+    /**
+     * Handles square click events for network game
+     * Sends move requests to the server instead of updating state directly
+     * 
+     * @param {number} row - Row index (0-8)
+     * @param {number} col - Column index (0-8)
+     * @returns {void}
+     */
     onSquareClick(row, col) {
         if (!this.isMyTurn || this.board[row][col] !== null) {
             return;
@@ -576,7 +855,13 @@ class NetworkGame extends BaseGame {
         }
     }
 
-    // Override getTurnText for network mode
+    /**
+     * Gets the turn indicator text for network mode
+     * Shows "Your Turn" or "Opponent's Turn" instead of player colors
+     * 
+     * @override
+     * @returns {string} Text describing whose turn it is
+     */
     getTurnText() {
         const action = this.kingMoved ? 'Place a Quadraphage' : 'Move the King';
 
@@ -587,7 +872,13 @@ class NetworkGame extends BaseGame {
         }
     }
 
-    // Override addTurnIndicatorClasses for network mode
+    /**
+     * Adds CSS classes to the turn indicator for network mode
+     * Adds both turn-specific and player-color classes
+     * 
+     * @override
+     * @returns {void}
+     */
     addTurnIndicatorClasses() {
         if (this.isMyTurn) {
             this.turnIndicator.classList.add('your-turn');
@@ -597,16 +888,38 @@ class NetworkGame extends BaseGame {
         this.turnIndicator.classList.add(this.currentPlayer === 1 ? 'player1-turn' : 'player2-turn');
     }
 
-    // Override shouldShowQuadPreview for network mode
+    /**
+     * Determines if quadraphage preview should show in network mode
+     * Only shows preview when it's the player's turn
+     * 
+     * @override
+     * @param {number} row - Row index (0-8)
+     * @param {number} col - Column index (0-8)
+     * @returns {boolean} True if preview should be shown
+     */
     shouldShowQuadPreview(row, col) {
         return this.isMyTurn && this.kingMoved && this.board[row][col] === null && this.canPlaceQuadraphage();
     }
 
-    // Override shouldShowKingPreview for network mode
+    /**
+     * Determines if king preview should show in network mode
+     * Only shows preview when it's the player's turn
+     * 
+     * @override
+     * @param {number} row - Row index (0-8)
+     * @param {number} col - Column index (0-8)
+     * @returns {boolean} True if preview should be shown
+     */
     shouldShowKingPreview(row, col) {
         return this.isMyTurn && !this.kingMoved && this.board[row][col] === null && this.isKingMove(row, col);
     }
 
+    /**
+     * Returns to the main menu and cleans up the network connection
+     * Disconnects from server and reloads the page
+     * 
+     * @returns {void}
+     */
     backToMenu() {
         this.gameScreen.style.display = 'none';
         this.menuScreen.style.display = 'flex';
@@ -621,7 +934,10 @@ class NetworkGame extends BaseGame {
     }
 }
 
-// Initialize game based on mode selection
+/**
+ * Initialize game based on mode selection
+ * Sets up event listeners for local and network game buttons
+ */
 document.addEventListener('DOMContentLoaded', () => {
     const menuScreen = document.getElementById('menu-screen');
     const gameScreen = document.getElementById('game-screen');
