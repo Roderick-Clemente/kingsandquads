@@ -8,6 +8,8 @@
 - ✅ Sound effects and visual polish
 - ✅ Mobile-optimized responsive design (portrait & landscape)
 - ✅ Sticky turn indicator for scrollable gameplay
+- ✅ PM2 process management with auto-restart and boot persistence
+- ✅ One-command deployment script (./deploy.sh)
 
 ---
 
@@ -251,15 +253,17 @@
 **Goal**: Better hosting, monitoring, and maintenance
 
 ### 4.1 Raspberry Pi Production Setup ⭐ HIGH PRIORITY
-**Why**: Currently running in tmux - not production-ready
+**Why**: Ensure reliable production hosting with proper process management
 **Impact**: Reliability and auto-recovery
 
-- [ ] Set up PM2 process manager
-  - [ ] Auto-restart on crash
-  - [ ] Start on Pi boot
-  - [ ] Log management (rotation)
-  - [ ] CPU/memory monitoring
-- [ ] Create systemd service (alternative to PM2)
+- [x] Set up PM2 process manager
+  - [x] Auto-restart on crash
+  - [x] Start on Pi boot
+  - [x] Log management (rotation)
+  - [x] CPU/memory monitoring
+- [x] Create deployment script (deploy.sh)
+- [x] Create PM2 configuration (ecosystem.config.js)
+- [x] Create deployment documentation (DEPLOYMENT.md)
 - [ ] Environment configuration (.env file)
   - [ ] Custom port
   - [ ] Production/development mode
@@ -270,7 +274,8 @@
   - [ ] Server uptime
   - [ ] Memory usage
 
-**Files to create**: `ecosystem.config.js` (PM2), `.env.example`, `DEPLOYMENT.md`
+**Files created**: `ecosystem.config.js`, `deploy.sh`, `DEPLOYMENT.md`
+**Status**: PM2 setup complete, easy one-command deployments enabled
 
 ---
 
