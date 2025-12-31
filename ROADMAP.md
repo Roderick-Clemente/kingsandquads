@@ -32,9 +32,12 @@
   - [ ] Custom modal instead of browser alert
   - [ ] Clears localStorage state
 - [ ] Browser refresh protection (beforeunload)
-  - [ ] Show warning if game is active
-  - [ ] Only trigger if moves have been made
-  - [ ] Simple browser dialog (can't customize fully)
+  - [ ] Desktop: beforeunload event with warning dialog
+  - [ ] Mobile: Prevent pull-to-refresh gesture
+    - [ ] Add overscroll-behavior CSS
+    - [ ] Add user-scalable=no to viewport
+    - [ ] Test on iOS Safari and Android Chrome
+  - [ ] Note: iOS Safari ignores beforeunload by design
 - [ ] Network game considerations
   - [ ] Save connection info for reconnection
   - [ ] Coordinate with server state (Phase 2.2)
