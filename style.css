@@ -467,12 +467,15 @@ h1 {
 
 .close {
     color: #aaa;
+    position: sticky;
+    top: 0;
     float: right;
     font-size: 32px;
     font-weight: bold;
     cursor: pointer;
     line-height: 20px;
     transition: color 0.2s ease;
+    z-index: 10;
 }
 
 .close:hover,
