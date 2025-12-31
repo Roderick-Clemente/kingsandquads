@@ -224,6 +224,9 @@ h1 {
     color: #333;
     border: 3px solid #dee2e6;
     transition: all 0.3s ease;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .turn-indicator.your-turn {
@@ -254,7 +257,10 @@ h1 {
     border-radius: 10px;
     margin: 0 auto;
     max-width: 600px;
+    max-height: 600px;
     aspect-ratio: 1;
+    width: 100%;
+    height: auto;
 }
 
 .square {
@@ -484,30 +490,62 @@ h1 {
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+
+/* Mobile - Portrait */
+@media (max-width: 768px) and (orientation: portrait) {
+    body {
+        padding: 10px;
+        align-items: flex-start;
+    }
+
     .container {
-        padding: 20px;
+        padding: 15px;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     h1 {
-        font-size: 1.5em;
+        font-size: 1.3em;
+        margin-bottom: 10px;
     }
 
     .game-info {
         flex-direction: column;
+        margin-bottom: 15px;
+        gap: 10px;
     }
 
     .turn-indicator {
         order: -1;
         width: 100%;
+        padding: 12px;
+        font-size: 0.95em;
+    }
+
+    .player-info {
+        padding: 10px;
     }
 
     .board {
-        max-width: 100%;
+        max-width: 95vw;
+        max-height: 95vw;
+        gap: 2px;
+        padding: 2px;
     }
 
     .square {
-        font-size: 1.5em;
+        padding: 2px;
+        min-height: 40px;
+    }
+
+    .square-content {
+        font-size: clamp(1.5em, 5vw, 2.2em);
+    }
+
+    .square-label {
+        font-size: clamp(0.65em, 2.2vw, 0.9em);
+        top: 1px;
+        left: 2px;
     }
 
     .mode-buttons {
@@ -534,5 +572,84 @@ h1 {
 
     .modal-content h3 {
         font-size: 1.1em;
+    }
+}
+
+/* Mobile - Landscape */
+@media (max-width: 926px) and (orientation: landscape) {
+    body {
+        padding: 10px;
+        align-items: flex-start;
+        min-height: 100vh;
+    }
+
+    .container {
+        padding: 12px;
+        max-width: 100%;
+        width: 100%;
+        min-height: auto;
+        position: relative;
+    }
+
+    h1 {
+        font-size: 1.1em;
+        margin-bottom: 6px;
+    }
+
+    .settings-bar {
+        margin-bottom: 6px;
+    }
+
+    .game-info {
+        flex-direction: row;
+        margin-bottom: 10px;
+        gap: 8px;
+        position: relative;
+    }
+
+    .player-info {
+        padding: 8px;
+        font-size: 0.8em;
+    }
+
+    .turn-indicator {
+        padding: 8px;
+        font-size: 0.85em;
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: auto;
+        max-width: 80vw;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        background: rgba(248, 249, 250, 0.92);
+        backdrop-filter: blur(8px);
+    }
+
+    .board {
+        width: min(500px, 85vw);
+        height: min(500px, 85vw);
+        gap: 2px;
+        padding: 2px;
+    }
+
+    .square {
+        padding: 2px;
+    }
+
+    .square-content {
+        font-size: clamp(1.8em, 5vh, 2.5em);
+    }
+
+    .square-label {
+        font-size: clamp(0.7em, 2vh, 0.9em);
+        top: 2px;
+        left: 3px;
+    }
+
+    .modal-content {
+        margin: 5% auto;
+        padding: 20px;
+        max-height: 90vh;
     }
 }

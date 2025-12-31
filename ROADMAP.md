@@ -4,15 +4,49 @@
 - ✅ Working local and network multiplayer
 - ✅ Well-documented codebase with JSDoc
 - ✅ Hosted on Raspberry Pi (http://pioluv:3000)
-- ✅ Help modal with game rules
+- ✅ Help modal with game rules (sticky close button)
 - ✅ Sound effects and visual polish
+- ✅ Mobile-optimized responsive design (portrait & landscape)
+- ✅ Sticky turn indicator for scrollable gameplay
 
 ---
 
 ## Phase 1: Critical UX Fixes (Week 1-2)
 **Goal**: Fix the most jarring user experience issues
 
-### 1.1 Replace Browser Alerts with Custom Modals ⭐ HIGH PRIORITY
+### 1.1 Game State Persistence ⭐ HIGH PRIORITY
+**Why**: Prevent accidental game loss from refresh (especially on mobile pull-to-refresh)
+**Impact**: Major UX improvement, builds user trust
+
+- [ ] Implement localStorage game state persistence
+  - [ ] Save board state after every move
+  - [ ] Save turn state, player info, piece counts
+  - [ ] Track game mode (local vs network)
+  - [ ] Store timestamp of last move
+- [ ] Auto-restore game on page load
+  - [ ] Show "Resume previous game?" prompt if found
+  - [ ] Clear old games (>24 hours)
+  - [ ] Handle edge cases (game already finished, corrupted data)
+- [ ] Add "New Game" button with confirmation
+  - [ ] Confirm only if active game in progress
+  - [ ] Custom modal instead of browser alert
+  - [ ] Clears localStorage state
+- [ ] Browser refresh protection (beforeunload)
+  - [ ] Show warning if game is active
+  - [ ] Only trigger if moves have been made
+  - [ ] Simple browser dialog (can't customize fully)
+- [ ] Network game considerations
+  - [ ] Save connection info for reconnection
+  - [ ] Coordinate with server state (Phase 2.2)
+  - [ ] Handle opponent disconnect gracefully
+
+**Files to modify**: `game.js` (add GameStateManager class), `index.html` (New Game button), `style.css`
+
+**Future Enhancement**: Full state persistence for network games (coordinate with Phase 2.2 reconnection logic)
+
+---
+
+### 1.2 Replace Browser Alerts with Custom Modals ⭐ HIGH PRIORITY
 **Why**: Browser alerts are jarring and break immersion
 **Impact**: Major UX improvement
 
@@ -29,7 +63,7 @@
 
 ---
 
-### 1.2 Add Exit/Back to Menu Button ⭐ HIGH PRIORITY
+### 1.3 Add Exit/Back to Menu Button ⭐ HIGH PRIORITY
 **Why**: Currently no way to exit without refreshing browser
 **Impact**: Essential for good UX
 
@@ -46,7 +80,7 @@
 
 ---
 
-### 1.3 Visual Move Indicators ⭐ MEDIUM-HIGH PRIORITY
+### 1.4 Visual Move Indicators ⭐ MEDIUM-HIGH PRIORITY
 **Why**: Makes game more accessible for new players
 **Impact**: Better onboarding, clearer gameplay
 
@@ -137,16 +171,19 @@
 **Why**: Game should work well on phones/tablets
 **Impact**: Broader accessibility
 
-- [ ] Increase square label font size for mobile
-- [ ] Larger touch targets (min 44x44px Apple guidelines)
-- [ ] Test on real devices (iOS Safari, Android Chrome)
-- [ ] Optimize emoji sizes for small screens
-- [ ] Landscape orientation optimization
+- [x] Increase square label font size for mobile
+- [x] Larger touch targets (min 44x44px Apple guidelines)
+- [x] Test on real devices (iOS Safari, Android Chrome)
+- [x] Optimize emoji sizes for small screens
+- [x] Landscape orientation optimization (fixed size, scrollable board)
+- [x] Portrait orientation optimization (responsive sizing)
+- [x] Sticky turn indicator when scrolling
 - [ ] Prevent zoom on double-tap (user-scalable=no)
 - [ ] Bottom sheet for controls on mobile
 - [ ] Haptic feedback on piece placement (if supported)
 
-**Files to modify**: `style.css`, `index.html:meta viewport`
+**Files modified**: `style.css`
+**Status**: Core mobile experience complete, advanced features pending
 
 ---
 
